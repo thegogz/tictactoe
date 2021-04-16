@@ -21,11 +21,11 @@ X_IMAGE = pygame.transform.scale(pygame.image.load("images/x.png"), (80, 80))
 O_IMAGE = pygame.transform.scale(pygame.image.load("images/o.png"), (80, 80))
 
 # Fonts
-END_FONT = pygame.font.SysFont('courier', 40)
+# END_FONT = pygame.font.SysFont('courier', 40)
 
 # Draw Grid
 def draw_grid():
-    gap = WIDTH // ROWS 
+    gap = WIDTH // ROWS
 
     # Starting Points
     x = 0
@@ -50,7 +50,7 @@ def initialize_grid():
 
             # Adding center coordinates
             game_array[i][j] = (x, y, "", True)
-    
+
     return game_array
 
 def main():
@@ -58,6 +58,12 @@ def main():
     draw_grid()
     pygame.display.update()
 
-while True:
-    if __name__ == '__main__':
-        main()
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    main()
+
+pygame.quit()
