@@ -53,10 +53,41 @@ def initialize_grid():
     
     return game_array
 
+def click(game_array):
+    global x_turn, o_turn, images
+
+    # Mouse Position
+    m_x, m_y = pygame.mouse.get_pos()
+    print(str(m_x) + ' ' + str(m_y))
+
+    for i in range(len(game_array)):
+        for j in range(len(game_array[i])):
+            x, y, char, can_play = game_array[i][j]
+
+            # Distance between mouse and the center of the square
+            dis = math.sqrt((x - m_x) ** 2 + (y - m_y) ** 2)
+
+            # if it's inside the square
+            if dis < WIDTH // ROWS // 2 and can_play:
+                print(dis)
+                print(game_array)
+
+
 def main():
-    win.fill(WHITE)
-    draw_grid()
-    pygame.display.update()
+    run = True
+
+    game_array = initialize_grid()
+
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                click(game_array)
+
+        win.fill(WHITE)
+        draw_grid()
+        pygame.display.update()
 
 while True:
     if __name__ == '__main__':
