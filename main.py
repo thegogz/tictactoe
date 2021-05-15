@@ -83,6 +83,27 @@ def click(game_array):
                     x_turn = True
                     game_array[i][j] = (x, y, 'o', False)
 
+def has_won(game_array):
+
+    for row in range(len(game_array)):
+        if (game_array[row][0][2] == game_array[row][1][2] == game_array[row][2][2]) and game_array[row][0][2] != "":
+            display_message(game_array[row][0][2].upper() + " has won!")
+            return True
+
+    for col in range(len(game_array)):
+        if (game_array[0][col][2] == game_array[1][col][2] == game_array[2][col][2]) and game_array[0][col][2] != "":
+            display_message(game_array[0][col][2].upper() + " has won!")
+            return True
+
+
+def display_message(content):
+    pygame.time.delay(500)
+    win.fill(WHITE)
+    end_text = END_FONT.render(content, 1, BLACK)
+    win.blit(end_text, ((WIDTH - end_text.get_width()) // 2, (WIDTH - end_text.get_height()) // 2))
+    pygame.display.update()
+    pygame.time.delay(3000)
+
 def render():
     win.fill(WHITE)
     draw_grid()
@@ -118,7 +139,8 @@ def main():
 
         render()
 
-
+        if has_won(game_array):
+            run = False
 
 while True:
     if __name__ == '__main__':
