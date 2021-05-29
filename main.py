@@ -95,6 +95,24 @@ def has_won(game_array):
             display_message(game_array[0][col][2].upper() + " has won!")
             return True
 
+    if (game_array[0][0][2] == game_array[1][1][2] == game_array[2][2][2]) and game_array[0][0][2] != "":
+        display_message(game_array[0][0][2].upper() + " has won!")
+        return True
+
+    if (game_array[0][2][2] == game_array[1][1][2] == game_array[2][0][2]) and game_array[0][2][2] != "":
+        display_message(game_array[0][2][2].upper() + " has won!")
+        return True
+
+    return False
+
+def has_drawn(game_array):
+    for i in range(len(game_array)):
+        for j in range(len(game_array[i])):
+            if game_array[i][j][2] == "":
+                return False
+
+    display_message("It's a draw!")
+    return True
 
 def display_message(content):
     pygame.time.delay(500)
@@ -139,7 +157,7 @@ def main():
 
         render()
 
-        if has_won(game_array):
+        if has_won(game_array) or has_drawn(game_array):
             run = False
 
 while True:
