@@ -1,5 +1,9 @@
 import pygame
 import math
+import socket
+import pickle
+import os.path
+
 # Initializing Pygame
 pygame.init()
 
@@ -36,21 +40,46 @@ def draw_grid():
         pygame.draw.line(win, GRAY, (0, x), (WIDTH, x), 3) # rows
 
 
-def initialize_grid():
-    global dis_to_cen
+def load_game():
+    global x_turn, o_turn, images
+    x_turn = True
+    o_turn = False
 
     # Initializing the array
+    if os.path.isfile('tictactoe.cfg'):
+        with open('tictactoe.cfg', 'rb') as cfg_file:
+            game_array = pickle.load(cfg_file)
+            num_chars_placed = 0
+            for i in range(len(game_array)):
+                for j in range(len(game_array[i])):
+                    x, y, char, can_play = game_array[i][j]
+                    if not can_play:
+                        if char == 'x':
+                            images.append((x, y, X_IMAGE))
+                            num_chars_placed+=1
+                        elif char == 'o':
+                            images.append((x, y, O_IMAGE))
+                            num_chars_placed+=1
+
+            if (num_chars_placed % 2) != 0:
+                x_turn = False
+                o_turn = True
+    else:
+        game_array = reset_grid()
+
+    return game_array
+
+def reset_grid():
+    global images
+    images = []
     game_array = [[None, None, None], [None, None, None], [None, None, None]]
     for i in range(len(game_array)):
         for j in range(len(game_array[i])):
             x = dis_to_cen * (2 * j + 1)
             y = dis_to_cen * (2 * i + 1)
-
-            # Adding centre coordinates
             game_array[i][j] = (x, y, "", True)
-
+    save_game(game_array)
     return game_array
-
 
 def click(game_array):
     global x_turn, o_turn, images
@@ -139,6 +168,9 @@ def render():
 
     pygame.display.update()
 
+def save_game(game_array):
+    with open('tictactoe.cfg', 'wb') as cfg_file:
+        pickle.dump(game_array, cfg_file)
 
 def main():
     global x_turn, o_turn, images, draw, dis_to_cen
@@ -146,17 +178,16 @@ def main():
     images = []
     draw = False
 
-    x_turn = True
-    o_turn = False
     # @gearoidc : created dis_to_cen global
     dis_to_cen = WIDTH // ROWS // 2
 
-    game_array = initialize_grid()
+    game_array = load_game()
 
     run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                save_game(game_array)
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click(game_array)
@@ -164,6 +195,7 @@ def main():
         render()
 
         if has_won(game_array) or has_drawn(game_array):
+            reset_grid()
             run = False
 
 while True:
