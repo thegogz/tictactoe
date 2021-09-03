@@ -27,6 +27,7 @@ O_IMAGE = pygame.transform.scale(pygame.image.load("images/o.png"), (150, 150))
 # Fonts
 END_FONT = pygame.font.SysFont('courier', 40)
 
+KEEP_ALIVE = True
 def draw_grid():
     gap = WIDTH // ROWS
     # Starting points
@@ -173,7 +174,7 @@ def save_game(game_array):
         pickle.dump(game_array, cfg_file)
 
 def main():
-    global x_turn, o_turn, images, draw, dis_to_cen
+    global x_turn, o_turn, images, draw, dis_to_cen, KEEP_ALIVE
 
     images = []
     draw = False
@@ -183,21 +184,24 @@ def main():
 
     game_array = load_game()
 
-    run = True
-    while run:
+    while KEEP_ALIVE:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 save_game(game_array)
-                pygame.quit()
+                KEEP_ALIVE = False
+                break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click(game_array)
 
         render()
 
         if has_won(game_array) or has_drawn(game_array):
-            reset_grid()
-            run = False
+            game_array = reset_grid()
 
 while True:
     if __name__ == '__main__':
-        main()
+        if KEEP_ALIVE:
+            main()
+        else:
+            pygame.quit()
+            break
