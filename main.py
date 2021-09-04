@@ -1,14 +1,12 @@
 import pygame
 import math
-import socket
 import pickle
 import os.path
 
-# Initializing Pygame
 pygame.init()
 
 # Screen
-WIDTH = 500
+WIDTH = 300
 ROWS = 3
 win = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("TicTacToe")
@@ -21,32 +19,32 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
 # Images
-X_IMAGE = pygame.transform.scale(pygame.image.load("images/x.png"), (150, 150))
-O_IMAGE = pygame.transform.scale(pygame.image.load("images/o.png"), (150, 150))
+X_IMAGE = pygame.transform.scale(pygame.image.load("images/x.png"), (80, 80))
+O_IMAGE = pygame.transform.scale(pygame.image.load("images/o.png"), (80, 80))
 
 # Fonts
 END_FONT = pygame.font.SysFont('courier', 40)
 
-KEEP_ALIVE = True
+# Draw Grid
 def draw_grid():
     gap = WIDTH // ROWS
-    # Starting points
+
+    # Starting Points
     x = 0
     y = 0
 
     for i in range(ROWS):
-        x = i * gap
+        x  =  i * gap
 
-        pygame.draw.line(win, GRAY, (x, 0), (x, WIDTH), 3) # cols
-        pygame.draw.line(win, GRAY, (0, x), (WIDTH, x), 3) # rows
-
+        pygame.draw.line(win, GRAY, (x, 0), (x, WIDTH), 3)
+        pygame.draw.line(win, GRAY, (0, x), (WIDTH, x), 3)
 
 def load_game():
     global x_turn, o_turn, images
+
     x_turn = True
     o_turn = False
 
-    # Initializing the array
     if os.path.isfile('tictactoe.cfg'):
         with open('tictactoe.cfg', 'rb') as cfg_file:
             game_array = pickle.load(cfg_file)
@@ -55,83 +53,78 @@ def load_game():
                 for j in range(len(game_array[i])):
                     x, y, char, can_play = game_array[i][j]
                     if not can_play:
+                        num_chars_placed+=1
                         if char == 'x':
                             images.append((x, y, X_IMAGE))
-                            num_chars_placed+=1
                         elif char == 'o':
                             images.append((x, y, O_IMAGE))
-                            num_chars_placed+=1
 
             if (num_chars_placed % 2) != 0:
                 x_turn = False
                 o_turn = True
+
     else:
-        game_array = reset_grid()
+        dis_to_cen = WIDTH  // ROWS  // 2
 
-    return game_array
+        # Initializing  the  game array
+        game_array = [[None, None, None], [None, None, None], [None, None, None]]
 
-def reset_grid():
-    global images
-    images = []
-    game_array = [[None, None, None], [None, None, None], [None, None, None]]
-    for i in range(len(game_array)):
-        for j in range(len(game_array[i])):
-            x = dis_to_cen * (2 * j + 1)
-            y = dis_to_cen * (2 * i + 1)
-            game_array[i][j] = (x, y, "", True)
-    save_game(game_array)
+        for i in range(len(game_array)):
+            for j in range(len(game_array[i])):
+                x = dis_to_cen * (2 * j + 1)
+                y = dis_to_cen * (2 * i + 1)
+
+                # Adding center coordinates
+                game_array[i][j] = (x, y, "", True)
+    print(game_array)
     return game_array
 
 def click(game_array):
     global x_turn, o_turn, images
 
-    # Mouse position
+    # Mouse Position
     m_x, m_y = pygame.mouse.get_pos()
+    print(str(m_x) + ' ' + str(m_y))
 
     for i in range(len(game_array)):
         for j in range(len(game_array[i])):
             x, y, char, can_play = game_array[i][j]
 
-            # Distance between mouse and the centre of the square
+            # Distance between mouse and the center of the square
             dis = math.sqrt((x - m_x) ** 2 + (y - m_y) ** 2)
 
-            # If it's inside the square
-            if dis < dis_to_cen and can_play:
-                if x_turn:  # If it's X's turn
+            # if it's inside the square
+            if dis < WIDTH // ROWS // 2 and can_play:
+                print(dis)
+                print(game_array)
+                if x_turn:
                     images.append((x, y, X_IMAGE))
                     x_turn = False
                     o_turn = True
                     game_array[i][j] = (x, y, 'x', False)
 
-                elif o_turn:  # If it's O's turn
+                elif o_turn:
                     images.append((x, y, O_IMAGE))
-                    x_turn = True
                     o_turn = False
+                    x_turn = True
                     game_array[i][j] = (x, y, 'o', False)
 
-
-# Checking if someone has won
 def has_won(game_array):
-    # Checking rows
-    # @gearoidc, added row positional check to fix edge cases where wins would not be picked up
+
     for row in range(len(game_array)):
         if (game_array[row][0][2] == game_array[row][1][2] == game_array[row][2][2]) and game_array[row][0][2] != "":
             display_message(game_array[row][0][2].upper() + " has won!")
             return True
 
-    # Checking columns
-    # @gearoidc, added col positional check to fix edge cases where wins would not be picked up
     for col in range(len(game_array)):
         if (game_array[0][col][2] == game_array[1][col][2] == game_array[2][col][2]) and game_array[0][col][2] != "":
             display_message(game_array[0][col][2].upper() + " has won!")
             return True
 
-    # Checking main diagonal
     if (game_array[0][0][2] == game_array[1][1][2] == game_array[2][2][2]) and game_array[0][0][2] != "":
         display_message(game_array[0][0][2].upper() + " has won!")
         return True
 
-    # Checking reverse diagonal
     if (game_array[0][2][2] == game_array[1][1][2] == game_array[2][0][2]) and game_array[0][2][2] != "":
         display_message(game_array[0][2][2].upper() + " has won!")
         return True
@@ -159,7 +152,7 @@ def render():
     win.fill(WHITE)
     draw_grid()
 
-    # Drawing X's and O's
+    # draw X's and O's
     for image in images:
         x, y, IMAGE = image
         win.blit(IMAGE, (x - IMAGE.get_width() // 2, y - IMAGE.get_height() // 2))
@@ -171,34 +164,33 @@ def save_game(game_array):
         pickle.dump(game_array, cfg_file)
 
 def main():
-    global x_turn, o_turn, images, draw, dis_to_cen, KEEP_ALIVE
+    global x_turn, y_turn, images, draw, dis_to_cen
 
     images = []
     draw = False
 
-    # @gearoidc : created dis_to_cen global
+    x_turn = True
+    o_turn = False
+
     dis_to_cen = WIDTH // ROWS // 2
+
+    run = True
 
     game_array = load_game()
 
-    while KEEP_ALIVE:
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 save_game(game_array)
-                KEEP_ALIVE = False
-                break
+                pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click(game_array)
 
         render()
 
         if has_won(game_array) or has_drawn(game_array):
-            game_array = reset_grid()
+            run = False
 
 while True:
     if __name__ == '__main__':
-        if KEEP_ALIVE:
-            main()
-        else:
-            pygame.quit()
-            break
+        main()
