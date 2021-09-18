@@ -24,7 +24,7 @@ O_IMAGE = pygame.transform.scale(pygame.image.load("images/o.png"), (80, 80))
 
 # Fonts
 END_FONT = pygame.font.SysFont('courier', 40)
-
+KEEP_ALIVE = True
 # Draw Grid
 def draw_grid():
     gap = WIDTH // ROWS
@@ -44,6 +44,7 @@ def load_game():
 
     x_turn = True
     o_turn = False
+    pygame.display.set_caption("TicTacToe - X Turn")
 
     if os.path.isfile('tictactoe.cfg'):
         with open('tictactoe.cfg', 'rb') as cfg_file:
@@ -62,21 +63,26 @@ def load_game():
             if (num_chars_placed % 2) != 0:
                 x_turn = False
                 o_turn = True
+                pygame.display.set_caption("TicTacToe - O Turn")
 
     else:
-        dis_to_cen = WIDTH  // ROWS  // 2
+        #dis_to_cen = WIDTH  // ROWS  // 2
+        game_array = reset_grid()
 
-        # Initializing  the  game array
-        game_array = [[None, None, None], [None, None, None], [None, None, None]]
+    return game_array
 
-        for i in range(len(game_array)):
-            for j in range(len(game_array[i])):
-                x = dis_to_cen * (2 * j + 1)
-                y = dis_to_cen * (2 * i + 1)
+def reset_grid():
+    global images
+    images = []
 
-                # Adding center coordinates
-                game_array[i][j] = (x, y, "", True)
-    print(game_array)
+    game_array = [[None, None, None], [None, None, None], [None, None, None]]
+    for i in range(len(game_array)):
+        for j in range(len(game_array[i])):
+            x = dis_to_cen * (2 * j + 1)
+            y = dis_to_cen * (2 * i + 1)
+            game_array[i][j] = (x, y, "", True)
+
+    save_game(game_array)
     return game_array
 
 def click(game_array):
@@ -85,6 +91,7 @@ def click(game_array):
     # Mouse Position
     m_x, m_y = pygame.mouse.get_pos()
     print(str(m_x) + ' ' + str(m_y))
+    pygame.display.set_caption("TicTacToe x")
 
     for i in range(len(game_array)):
         for j in range(len(game_array[i])):
@@ -102,12 +109,15 @@ def click(game_array):
                     x_turn = False
                     o_turn = True
                     game_array[i][j] = (x, y, 'x', False)
+                    pygame.display.set_caption("TicTacToe - O Turn")
+
 
                 elif o_turn:
                     images.append((x, y, O_IMAGE))
                     o_turn = False
                     x_turn = True
                     game_array[i][j] = (x, y, 'o', False)
+                    pygame.display.set_caption("TicTacToe - X Turn")
 
 def has_won(game_array):
 
@@ -164,7 +174,7 @@ def save_game(game_array):
         pickle.dump(game_array, cfg_file)
 
 def main():
-    global x_turn, y_turn, images, draw, dis_to_cen
+    global x_turn, y_turn, images, draw, dis_to_cen, KEEP_ALIVE
 
     images = []
     draw = False
@@ -174,23 +184,26 @@ def main():
 
     dis_to_cen = WIDTH // ROWS // 2
 
-    run = True
-
     game_array = load_game()
 
-    while run:
+    while KEEP_ALIVE:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 save_game(game_array)
-                pygame.quit()
+                KEEP_ALIVE = False
+                break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 click(game_array)
 
         render()
 
         if has_won(game_array) or has_drawn(game_array):
-            run = False
+            game_array = reset_grid()
 
 while True:
     if __name__ == '__main__':
-        main()
+        if KEEP_ALIVE:
+            main()
+        else:
+            pygame.quit()
+            break
